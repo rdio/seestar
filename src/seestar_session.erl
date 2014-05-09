@@ -52,7 +52,7 @@
          sock :: inet:socket(),
          buffer :: seestar_buffer:buffer(),
          free_ids :: [seestar_frame:stream_id()],
-         backlog = queue:new() :: queue:queue(),
+         backlog = queue:new() :: queue(),
          reqs :: ets:tid()}).
 
 %% -------------------------------------------------------------------------
