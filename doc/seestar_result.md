@@ -26,6 +26,18 @@ change() = created | updated | dropped
 
 
 
+### <a name="type-prepared_query">prepared_query()</a> ###
+
+
+
+<pre><code>
+prepared_query() = #prepared_query{}
+</code></pre>
+
+
+
+
+
 ### <a name="type-prepared_result">prepared_result()</a> ###
 
 
@@ -96,7 +108,7 @@ type() = void | rows | set_keyspace | prepared | schema_change
 ## Function Index ##
 
 
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#change-1">change/1</a></td><td></td></tr><tr><td valign="top"><a href="#keyspace-1">keyspace/1</a></td><td></td></tr><tr><td valign="top"><a href="#names-1">names/1</a></td><td></td></tr><tr><td valign="top"><a href="#query_id-1">query_id/1</a></td><td></td></tr><tr><td valign="top"><a href="#rows-1">rows/1</a></td><td></td></tr><tr><td valign="top"><a href="#table-1">table/1</a></td><td></td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td></td></tr><tr><td valign="top"><a href="#type-2">type/2</a></td><td></td></tr><tr><td valign="top"><a href="#types-1">types/1</a></td><td></td></tr></table>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#change-1">change/1</a></td><td></td></tr><tr><td valign="top"><a href="#has_more_rows-1">has_more_rows/1</a></td><td></td></tr><tr><td valign="top"><a href="#keyspace-1">keyspace/1</a></td><td></td></tr><tr><td valign="top"><a href="#names-1">names/1</a></td><td></td></tr><tr><td valign="top"><a href="#prepared_query-1">prepared_query/1</a></td><td></td></tr><tr><td valign="top"><a href="#rows-1">rows/1</a></td><td></td></tr><tr><td valign="top"><a href="#table-1">table/1</a></td><td></td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td></td></tr><tr><td valign="top"><a href="#type-2">type/2</a></td><td></td></tr></table>
 
 
 <a name="functions"></a>
@@ -111,9 +123,18 @@ type() = void | rows | set_keyspace | prepared | schema_change
 <pre><code>
 change(Result::<a href="#type-schema_change_result">schema_change_result()</a>) -&gt; <a href="#type-change">change()</a>
 </code></pre>
+<br />
 
-<br></br>
 
+<a name="has_more_rows-1"></a>
+
+### has_more_rows/1 ###
+
+
+<pre><code>
+has_more_rows(Result::<a href="#type-rows_result">rows_result()</a>) -&gt; boolean()
+</code></pre>
+<br />
 
 
 <a name="keyspace-1"></a>
@@ -124,9 +145,7 @@ change(Result::<a href="#type-schema_change_result">schema_change_result()</a>) 
 <pre><code>
 keyspace(Result::<a href="#type-set_keyspace_result">set_keyspace_result()</a> | <a href="#type-schema_change_result">schema_change_result()</a>) -&gt; binary()
 </code></pre>
-
-<br></br>
-
+<br />
 
 
 <a name="names-1"></a>
@@ -137,22 +156,18 @@ keyspace(Result::<a href="#type-set_keyspace_result">set_keyspace_result()</a> |
 <pre><code>
 names(Result::<a href="#type-rows_result">rows_result()</a> | <a href="#type-prepared_result">prepared_result()</a>) -&gt; [binary()]
 </code></pre>
-
-<br></br>
-
+<br />
 
 
-<a name="query_id-1"></a>
+<a name="prepared_query-1"></a>
 
-### query_id/1 ###
+### prepared_query/1 ###
 
 
 <pre><code>
-query_id(Result::<a href="#type-prepared_result">prepared_result()</a>) -&gt; binary()
+prepared_query(Result::<a href="#type-prepared_result">prepared_result()</a>) -&gt; <a href="#type-prepared_query">prepared_query()</a>
 </code></pre>
-
-<br></br>
-
+<br />
 
 
 <a name="rows-1"></a>
@@ -163,9 +178,7 @@ query_id(Result::<a href="#type-prepared_result">prepared_result()</a>) -&gt; bi
 <pre><code>
 rows(Rows::<a href="#type-rows_result">rows_result()</a>) -&gt; [[<a href="seestar_cqltypes.md#type-value">seestar_cqltypes:value()</a>]]
 </code></pre>
-
-<br></br>
-
+<br />
 
 
 <a name="table-1"></a>
@@ -176,9 +189,7 @@ rows(Rows::<a href="#type-rows_result">rows_result()</a>) -&gt; [[<a href="seest
 <pre><code>
 table(Result::<a href="#type-schema_change_result">schema_change_result()</a>) -&gt; binary() | undefined
 </code></pre>
-
-<br></br>
-
+<br />
 
 
 <a name="type-1"></a>
@@ -189,9 +200,7 @@ table(Result::<a href="#type-schema_change_result">schema_change_result()</a>) -
 <pre><code>
 type(Result::<a href="#type-result">result()</a>) -&gt; <a href="#type-type">type()</a>
 </code></pre>
-
-<br></br>
-
+<br />
 
 
 <a name="type-2"></a>
@@ -202,21 +211,6 @@ type(Result::<a href="#type-result">result()</a>) -&gt; <a href="#type-type">typ
 <pre><code>
 type(Result::<a href="#type-rows_result">rows_result()</a> | <a href="#type-prepared_result">prepared_result()</a>, Name::binary()) -&gt; <a href="seestar_cqltypes.md#type-type">seestar_cqltypes:type()</a>
 </code></pre>
-
-<br></br>
-
-
-
-<a name="types-1"></a>
-
-### types/1 ###
-
-
-<pre><code>
-types(Result::<a href="#type-rows_result">rows_result()</a> | <a href="#type-prepared_result">prepared_result()</a>) -&gt; [<a href="seestar_cqltypes.md#type-type">seestar_cqltypes:type()</a>]
-</code></pre>
-
-<br></br>
-
+<br />
 
 

@@ -53,7 +53,7 @@ type() = <a href="#type-native">native()</a> | {list | set, <a href="#type-nativ
 
 
 <pre><code>
-value() = null | integer() | binary() | boolean() | float() | <a href="inet.md#type-ip_address">inet:ip_address()</a> | <a href="#type-decimal">decimal()</a> | list() | dict() | set()
+value() = null | integer() | binary() | boolean() | float() | <a href="inet.md#type-ip_address">inet:ip_address()</a> | <a href="#type-decimal">decimal()</a> | list() | <a href="#type-dict_t">dict_t()</a> | <a href="#type-set_t">set_t()</a>
 </code></pre>
 
 
