@@ -51,13 +51,13 @@ change(#status_change{change = Change}) ->
 change(#schema_change{change = Change}) ->
     Change.
 
--spec ip(Event :: topology_change_event() | status_change_event()) -> inet:ip_address().
+-spec ip(Event :: event()) -> inet:ip_address().
 ip(#topology_change{ip = IP}) ->
     IP;
 ip(#status_change{ip = IP}) ->
     IP.
 
--spec port(Event :: topology_change_event() | status_change_event()) -> inet:port_number().
+-spec port(Event :: event()) -> inet:port_number().
 port(#topology_change{port = Port}) ->
     Port;
 port(#status_change{port = Port}) ->

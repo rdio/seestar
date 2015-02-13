@@ -258,7 +258,7 @@ get_transport(ConnectOptions0) ->
 %% @doc
 %% Extracts the timeout from the conenct options. Returns a tuple with the first element
 %% being the timeout, and the second a proplist of the remaining options
--spec get_timeout([connect_option()]) -> {ssl|tcp, [connect_option()]}.
+-spec get_timeout([connect_option()]) -> {timeout(), [connect_option()]}.
 get_timeout(ConnectOptions0) ->
     Timeout = proplists:get_value(connect_timeout, ConnectOptions0, infinity),
     NewConnectOptions = proplists:delete(connect_timeout, ConnectOptions0),
