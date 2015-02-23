@@ -122,6 +122,14 @@ decode(?SUPPORTED, Body, _CachedDecodeData) ->
     #supported{versions = proplists:get_value(?VERSION, KVPairs),
                compression = proplists:get_value(?COMPRESSION, KVPairs)};
 
+decode(?EVENT, Body, _CachedDecodeData) ->
+    {EventType, Rest} = seestar_types:decode_string(Body),
+    #event{event = case EventType of
+                       ?TOPOLOGY_CHANGE -> decode_topology_change(Rest);
+                       ?STATUS_CHANGE -> decode_status_change(Rest);
+                       ?SCHEMA_CHANGE -> decode_schema_change(Rest)
+                   end};
+
 decode(?RESULT, Body, CachedDecodeData) ->
     {Kind, Rest} = seestar_types:decode_int(Body),
     #result{result = case Kind of
@@ -267,6 +275,20 @@ decode_prepared(Body) ->
     {RequestMetadata, Rest1} = decode_metadata(Rest),
     {ResultMetadata, _Rest2} = decode_metadata(Rest1),
     #prepared{id = ID, result_metadata = ResultMetadata, request_metadata = RequestMetadata}.
+
+decode_topology_change(Body) ->
+    {Change, Rest} = seestar_types:decode_string(Body),
+    {{Address, Port}, _} = seestar_types:decode_inet(Rest),
+    #topology_change{change = list_to_atom(string:to_lower(binary_to_list(Change))),
+                     ip = Address,
+                     port = Port}.
+
+decode_status_change(Body) ->
+    {Change, Rest} = seestar_types:decode_string(Body),
+    {{Address, Port}, _} = seestar_types:decode_inet(Rest),
+    #status_change{change = list_to_atom(string:to_lower(binary_to_list(Change))),
+                   ip = Address,
+                   port = Port}.
 
 decode_schema_change(Body) ->
     {Change, Rest} = seestar_types:decode_string(Body),

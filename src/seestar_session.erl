@@ -21,6 +21,7 @@
 -include("seestar.hrl").
 %% API exports.
 -export([start_link/2, start_link/3, start_link/4, stop/1]).
+-export([set_event_listener/2]).
 -export([perform/3, perform/4, perform/5]).
 -export([perform_async/3, perform_async/4, perform_async/5]).
 -export([prepare/2]).
@@ -33,6 +34,7 @@
 -export([init/1, terminate/2, handle_call/3, handle_cast/2, handle_info/2,
          code_change/3]).
 
+-type host() :: string() | inet:ip_address().
 -type credentials() :: [{string() | binary(), string() | binary()}].
 -type events() :: [topology_change | status_change | schema_change].
 -type client_option() :: {keyspace, string() | binary()}
@@ -56,26 +58,27 @@
          decode_data = undefined :: any()}).
 
 -record(st,
-        {host :: inet:hostname(),
+        {host :: host(),
          transport :: tcp | ssl,
          sock :: inet:socket() | ssl:sslsocket(),
          buffer :: seestar_buffer:buffer(),
          free_ids :: [seestar_frame:stream_id()],
          backlog = queue:new() :: queue_t(),
-         reqs :: ets:tid()}).
+         reqs :: ets:tid(),
+         event_listener :: pid() | undefined}).
 
 %% -------------------------------------------------------------------------
 %% API
 %% -------------------------------------------------------------------------
 
 %% @equiv start_link(Host, Post, [])
--spec start_link(inet:hostname(), inet:port_number()) ->
+-spec start_link(host(), inet:port_number()) ->
     any().
 start_link(Host, Port) ->
     start_link(Host, Port, []).
 
 %% @equiv start_link(Host, Post, ClientOptions, [])
--spec start_link(inet:hostname(), inet:port_number(), [client_option()]) ->
+-spec start_link(host(), inet:port_number(), [client_option()]) ->
     any().
 start_link(Host, Port, ClientOptions) ->
     start_link(Host, Port, ClientOptions, []).
@@ -85,7 +88,7 @@ start_link(Host, Port, ClientOptions) ->
 %% By default it will connect on plain tcp. If you want to connect using ssl, pass
 %% {ssl, [ssl_option()]} in the ConnectOptions
 %% @end
--spec start_link(inet:hostname(), inet:port_number(), [client_option()], [connect_option()]) ->
+-spec start_link(host(), inet:port_number(), [client_option()], [connect_option()]) ->
     {ok, pid()} | {error, any()}.
 start_link(Host, Port, ClientOptions, ConnectOptions) ->
      case gen_server:start_link(?MODULE, [Host, Port, ConnectOptions], []) of
@@ -150,6 +153,12 @@ subscribe(Pid, Options) ->
                 #error{} -> false
             end
     end.
+
+%% @doc Set the client's event listener. If the client is subscribed to events,
+%% they will be sent to the identified process.
+-spec set_event_listener(pid(), pid() | undefined) -> ok.
+set_event_listener(Client, Listener) ->
+    gen_server:cast(Client, {event_listener, Listener}).
 
 %% @doc Stop the client.
 %% Closes the socket and terminates the process normally.
@@ -318,7 +327,7 @@ get_transport(ConnectOptions0) ->
 %% @doc
 %% Extracts the timeout from the conenct options. Returns a tuple with the first element
 %% being the timeout, and the second a proplist of the remaining options
--spec get_timeout([connect_option()]) -> {ssl|tcp, [connect_option()]}.
+-spec get_timeout([connect_option()]) -> {timeout(), [connect_option()]}.
 get_timeout(ConnectOptions0) ->
     Timeout = proplists:get_value(connect_timeout, ConnectOptions0, infinity),
     NewConnectOptions = proplists:delete(connect_timeout, ConnectOptions0),
@@ -383,6 +392,9 @@ handle_cast(stop, #st{sock = Sock, transport = tcp} = St) ->
 handle_cast(stop, #st{sock = Sock, transport = ssl} = St) ->
     ssl:close(Sock),
     {stop, normal, St};
+
+handle_cast({event_listener, Listener}, St) ->
+    {noreply, St#st{event_listener = Listener}};
 
 handle_cast(Request, St) ->
     {stop, {unexpected_cast, Request}, St}.
@@ -470,7 +482,20 @@ process_frames([Frame|Frames], St) ->
 process_frames([], St) ->
     process_backlog(St).
 
-handle_event(_Frame, St) ->
+handle_event(_Frame, #st{event_listener = undefined} = St) ->
+    St;
+handle_event(Frame, #st{event_listener = Pid} = St) ->
+    Op = seestar_frame:opcode(Frame),
+    Body = seestar_frame:body(Frame),
+    F = fun() ->
+            case seestar_messages:decode(Op, Body) of
+                #event{event = Event} ->
+                    {ok, Event};
+                #error{} = Error ->
+                    {error, Error}
+            end
+        end,
+    Pid ! {seestar_event, F},
     St.
 
 handle_response(Frame, St) ->

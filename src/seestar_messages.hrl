@@ -34,6 +34,10 @@
 %% event.
 -define(EVENT, 16#0C).
 
+-define(TOPOLOGY_CHANGE, <<"TOPOLOGY_CHANGE">>).
+-define(STATUS_CHANGE, <<"STATUS_CHANGE">>).
+-define(SCHEMA_CHANGE, <<"SCHEMA_CHANGE">>).
+
 %% Used in requests and responses
 -record(column,
         {keyspace :: binary(),
